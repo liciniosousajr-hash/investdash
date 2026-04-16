@@ -1,2 +1,3 @@
 [build]
+  publish = "investdash"
   functions = "netlify/functions"
