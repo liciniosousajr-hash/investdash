@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>InvestDash</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--bg:#080d18;--surf:#0f1a2e;--surf2:#162035;--border:#1c2d47;--accent:#00c9a7;--blue:#38bdf8;--red:#f43f5e;--green:#22c55e;--yellow:#f59e0b;--text:#cbd5e1;--muted:#475569;--white:#f1f5f9;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;}
+.hdr{background:linear-gradient(160deg,#080d18,#0f1a2e);border-bottom:1px solid var(--border);padding:12px 14px 8px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;}
+.logo em{color:var(--accent);font-style:normal;}.logo span{color:var(--white);}
+.status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.dot.live{background:var(--green);animation:bl 2s infinite;}.dot.err{background:var(--red);}.dot.warn{background:var(--yellow);}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-ref{background:var(--accent);color:#050d18;border:none;border-radius:7px;padding:7px 13px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.btn-ref:active{transform:scale(.95);}.btn-ref.busy{opacity:.5;pointer-events:none;}
+.spin{display:inline-block;}.spin.go{animation:rot .7s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg)}}
+.tabs{display:flex;gap:4px;margin-bottom:2px;}
+.tab{padding:7px 15px;border-radius:7px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--muted);border:1px solid transparent;}
+.tab.on{color:var(--accent);border-color:var(--accent);background:rgba(0,201,167,.09);}
+.fbar{padding:8px 14px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.fbar::-webkit-scrollbar{display:none;}
+.fbtn{white-space:nowrap;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;}
+.fbtn.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
+.mkt{margin:6px 14px 0;padding:5px 10px;border-radius:7px;font-size:10px;display:flex;align-items:center;gap:6px;}
+.mkt.pre{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:var(--yellow);}
+.mkt.open{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--green);}
+.mkt.closed{background:rgba(71,85,105,.1);border:1px solid var(--border);color:var(--muted);}
+.log{padding:3px 14px;font-size:10px;color:var(--muted);min-height:16px;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px;}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.card-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.card-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--white);}
+.card-val.g{color:var(--green);}.card-val.r{color:var(--red);}.card-val.y{color:var(--yellow);}
+.card-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+.twrap{padding:0 14px 80px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.twrap::-webkit-scrollbar{height:3px;}
+.twrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+table{width:100%;border-collapse:collapse;min-width:740px;}
+thead th{padding:7px 5px;text-align:right;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody tr{border-bottom:1px solid rgba(28,45,71,.5);}
+td{padding:8px 5px;text-align:right;font-size:11.5px;white-space:nowrap;vertical-align:middle;}
+td:first-child{text-align:left;}
+.tk{background:var(--surf2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;font-weight:600;color:var(--blue);}
+.pos{color:var(--green);}.neg{color:var(--red);}.neu{color:var(--muted);}
+.ord-badge{background:rgba(245,158,11,.13);border:1px solid rgba(245,158,11,.3);border-radius:4px;padding:2px 6px;font-size:10px;color:var(--yellow);}
+.nao{color:var(--muted);font-size:10px;font-style:italic;}
+.bal{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:4px;padding:2px 6px;font-size:10px;color:var(--blue);}
+.rt{font-size:8px;color:var(--green);vertical-align:super;margin-left:1px;font-weight:700;}
+.base{font-size:8px;color:var(--muted);vertical-align:super;margin-left:1px;}
+.gh{padding:5px 10px;margin:10px 0 3px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px;border-radius:0 6px 6px 0;}
+.gh.inv{background:linear-gradient(90deg,rgba(0,201,167,.09),transparent);border-left:2px solid var(--accent);color:var(--accent);}
+.gh.ac{background:linear-gradient(90deg,rgba(56,189,248,.09),transparent);border-left:2px solid var(--blue);color:var(--blue);}
+.gh-sub{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:400;}
+.tot td{border-top:1px solid var(--border);font-weight:600;color:var(--white);font-size:12px;padding-top:9px;}
+.gap td{padding:4px 0;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="logo"><em>INVEST</em><span>DASH</span></div>
+    <button class="btn-ref" id="btnRef" onclick="doRefresh()">
+      <span class="spin" id="spinIcon">&#8635;</span>&nbsp;REFRESH
+    </button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="tabs">
+      <div class="tab on" id="tabInv" onclick="setView('inv')">Por Investidor</div>
+      <div class="tab" id="tabAc" onclick="setView('acao')">Por A&#231;&#227;o</div>
+    </div>
+    <div class="status"><div class="dot" id="sdot"></div><span id="stxt">&#8212;</span></div>
+  </div>
+</div>
+<div class="mkt closed" id="mktBanner"></div>
+<div class="log" id="logLine"></div>
+<div class="fbar" id="fbar"></div>
+<div class="cards" id="cards"></div>
+<div class="twrap" id="tbl"></div>
+<script>
+var RAW=[
+  {inv:"LEONILDES XP",acao:"AMER3",qtde:52247,compra:106.29,total:5553328.29,ub:7.24,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP",acao:"ANIM3",qtde:237000,compra:4.24,total:1004832.60,ub:4.41,ordem:0,bal:"06/05/2026"},
+  {inv:"LEONILDES XP",acao:"AZUL4",qtde:2164216.4,compra:4.55,total:9840088.00,ub:0.0002,ordem:0,bal:"14/05/2026"},
+  {inv:"LEONILDES XP",acao:"INTB3",qtde:72200,compra:13.99,total:1010036.00,ub:14.35,ordem:14.43,bal:"06/05/2026"},
+  {inv:"LEONILDES XP",acao:"MGLU3",qtde:25600,compra:73.53,total:1882420.00,ub:9.25,ordem:0,bal:"07/05/2026"},
+  {inv:"LEONILDES XP",acao:"OIBR3",qtde:10514,compra:200.95,total:2112827.17,ub:0.15,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP",acao:"OIBR4",qtde:3705,compra:173.89,total:644280.00,ub:1.25,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP",acao:"PETR3",qtde:73000,compra:54.56,total:3982880.00,ub:51.50,ordem:54.95,bal:"11/05/2026"},
+  {inv:"LEONILDES XP",acao:"PETR4",qtde:80000,compra:49.73,total:3978400.00,ub:46.89,ordem:49.87,bal:"11/05/2026"},
+  {inv:"LEONILDES XP",acao:"TASA4",qtde:82060,compra:17.88,total:1467218.00,ub:5.24,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP",acao:"VALE3",qtde:25000,compra:81.70,total:2042439.03,ub:88.44,ordem:91.32,bal:"28/04/2026"},
+  {inv:"LEONILDES XP",acao:"VIIA3",qtde:10360,compra:143.21,total:1483658.76,ub:2.93,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP",acao:"VLID3",qtde:59000,compra:21.57,total:1272512.00,ub:20.51,ordem:22.81,bal:"06/05/2026"},
+  {inv:"LEONILDES XP",acao:"VULC3",qtde:110000,compra:18.84,total:2072386.80,ub:17.50,ordem:19.58,bal:"05/05/2026"},
+  {inv:"FRANCINE XP",acao:"AMER3",qtde:268500,compra:12.10,total:3248548.83,ub:0,ordem:0,bal:"13/05/2026"},
+  {inv:"FRANCINE XP",acao:"AZUL4",qtde:167016.7,compra:12.75,total:2129741.20,ub:0,ordem:0,bal:"14/05/2026"},
+  {inv:"FRANCINE XP",acao:"BBSE3",qtde:24000,compra:38.99,total:935841.28,ub:35.05,ordem:39.38,bal:"04/05/2026"},
+  {inv:"FRANCINE XP",acao:"MGLU3",qtde:180000,compra:7.18,total:1292320.17,ub:0,ordem:0,bal:"07/05/2026"},
+  {inv:"FRANCINE XP",acao:"OIBR3",qtde:14150,compra:35.70,total:505216.42,ub:0,ordem:0,bal:"13/05/2026"},
+  {inv:"FRANCINE XP",acao:"TASA3",qtde:25850,compra:17.94,total:463713.12,ub:5.34,ordem:0,bal:"13/05/2026"},
+  {inv:"NUNAM",acao:"BKI",qtde:2694000,compra:0.30,total:799104.30,ub:0.095,ordem:0,bal:"08/05/2026"},
+  {inv:"NUNAM",acao:"CERT",qtde:380000,compra:2.12,total:805600.00,ub:1.72,ordem:2.18,bal:"13/05/2026"},
+  {inv:"NUNAM",acao:"COP",qtde:8000,compra:121.91,total:975280.00,ub:118.92,ordem:131.53,bal:"30/04/2026"},
+  {inv:"NUNAM",acao:"CVX",qtde:7700,compra:193.54,total:1490260.00,ub:184.91,ordem:197.41,bal:"01/05/2026"},
+  {inv:"NUNAM",acao:"FEVR",qtde:35500,compra:21.35,total:757926.15,ub:8.27,ordem:0,bal:"15/09/2026"},
+  {inv:"NUNAM",acao:"FEVR CS",qtde:5500,compra:8.92,total:49060.00,ub:8.27,ordem:9.10,bal:"15/09/2026"},
+  {inv:"NUNAM",acao:"HPQ",qtde:86000,compra:24.06,total:2069220.00,ub:19.23,ordem:0,bal:"03/06/2026"},
+  {inv:"NUNAM",acao:"ORCL",qtde:12000,compra:164.00,total:1968009.40,ub:169.81,ordem:0,bal:"16/06/2026"},
+  {inv:"NUNAM",acao:"ORCL CS",qtde:4200,compra:203.75,total:855750.00,ub:169.81,ordem:0,bal:"16/06/2026"},
+  {inv:"NUNAM",acao:"OURO UBS",qtde:2667.43,compra:243.68,total:649999.34,ub:256.17,ordem:0,bal:null},
+  {inv:"NUNAM",acao:"VALE",qtde:57000,compra:17.41,total:992370.00,ub:17.62,ordem:18.13,bal:"28/04/2026"},
+  {inv:"NUNAM",acao:"VALE CS",qtde:65000,compra:15.36,total:998517.00,ub:17.62,ordem:0,bal:"28/04/2026"},
+  {inv:"LETICIA XP",acao:"AMER3",qtde:118500,compra:16.01,total:1897500.00,ub:0,ordem:0,bal:"13/05/2026"},
+  {inv:"LETICIA XP",acao:"AZUL4",qtde:160016,compra:12.20,total:1952091.00,ub:0,ordem:0,bal:"14/05/2026"},
+  {inv:"LETICIA XP",acao:"BBSE3",qtde:14000,compra:38.98,total:545720.00,ub:35.05,ordem:39.38,bal:"04/05/2026"},
+  {inv:"LETICIA XP",acao:"ONCO3",qtde:37000,compra:10.75,total:397610.00,ub:0,ordem:0,bal:"07/05/2026"},
+  {inv:"LETICIA XP",acao:"TASA4",qtde:33000,compra:17.44,total:575400.00,ub:5.24,ordem:0,bal:"13/05/2026"},
+  {inv:"GILSON XP 2",acao:"AMER3",qtde:2806,compra:25.46,total:71431.66,ub:6.26,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"AMER3",qtde:3480,compra:29.26,total:101840.00,ub:6.26,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"AZUL4",qtde:0.25,compra:121800,total:30450.00,ub:0.0002,ordem:0,bal:"14/05/2026"},
+  {inv:"MARTA GUIDE",acao:"MGLU3",qtde:800,compra:66.20,total:52960.00,ub:9.21,ordem:0,bal:"07/05/2026"},
+  {inv:"MARTA GUIDE",acao:"OIBR3",qtde:780,compra:238.00,total:185640.00,ub:0.16,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"OIBR4",qtde:760,compra:254.07,total:193090.00,ub:1.25,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"TASA3",qtde:2000,compra:27.90,total:55800.00,ub:5.29,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"TASA4",qtde:6000,compra:22.75,total:136501.00,ub:5.20,ordem:0,bal:"13/05/2026"},
+  {inv:"MARTA GUIDE",acao:"VIIA3",qtde:280,compra:258.02,total:72245.00,ub:2.84,ordem:0,bal:"13/05/2026"},
+  {inv:"PATRICIA LEO",acao:"OIBR3",qtde:390,compra:139.72,total:54490.00,ub:0.16,ordem:0,bal:"13/05/2026"},
+  {inv:"PATRICIA LEO",acao:"TASA3",qtde:700,compra:27.90,total:19530.00,ub:5.29,ordem:0,bal:"13/05/2026"},
+  {inv:"PATRICIA LEO",acao:"TASA4",qtde:2600,compra:23.64,total:61458.00,ub:5.20,ordem:0,bal:"13/05/2026"},
+  {inv:"MARICLEIDE LEO",acao:"OIBR3",qtde:900,compra:238.00,total:214200.00,ub:0.16,ordem:0,bal:"13/05/2026"},
+  {inv:"MARICLEIDE LEO",acao:"VVAR3",qtde:280,compra:498.88,total:139685.00,ub:2.84,ordem:0,bal:null},
+  {inv:"GILSON XP",acao:"AMER3",qtde:15100,compra:22.79,total:344076.69,ub:6.26,ordem:0,bal:"13/05/2026"},
+  {inv:"GILSON XP",acao:"MGLU3",qtde:3300,compra:69.00,total:227700.00,ub:9.21,ordem:0,bal:"07/05/2026"},
+  {inv:"GILSON XP",acao:"OIBR4",qtde:3970,compra:227.20,total:901978.00,ub:1.25,ordem:0,bal:"13/05/2026"},
+  {inv:"LEONILDES XP 2",acao:"AURA33",qtde:1200,compra:50.93,total:61115.17,ub:173.90,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"BMOB3",qtde:4400,compra:20.46,total:90032.95,ub:28.20,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"CSMG3",qtde:1400,compra:49.91,total:69871.42,ub:56.84,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"ELET6",qtde:1800.69,compra:49.79,total:89655.31,ub:72.09,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"GGBR4",qtde:5900,compra:16.83,total:99267.98,ub:21.12,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"ITLC34",qtde:1300,compra:38.04,total:49457.68,ub:54.20,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"PLPL3",qtde:5800,compra:15.37,total:89174.86,ub:14.02,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"RAPT4",qtde:8000,compra:6.28,total:50230.59,ub:5.58,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"SLCE3",qtde:8264,compra:15.54,total:128441.99,ub:19.10,ordem:0,bal:null},
+  {inv:"LEONILDES XP 2",acao:"TTEN3",qtde:6000,compra:16.62,total:99703.55,ub:16.48,ordem:0,bal:null},
+  {inv:"MARIO MULLER",acao:"AMER3",qtde:4900,compra:15.00,total:73500.00,ub:6.26,ordem:0,bal:"13/05/2026"},
+  {inv:"MARIO MULLER",acao:"AZUL4",qtde:0.32,compra:109100,total:34912.00,ub:0.0002,ordem:0,bal:"14/05/2026"}
+];
+
+var BMAP={"AMER3":"AMER3","ANIM3":"ANIM3","AZUL4":"AZUL4","BBSE3":"BBSE3","INTB3":"INTB3","MGLU3":"MGLU3","OIBR3":"OIBR3","OIBR4":"OIBR4","PETR3":"PETR3","PETR4":"PETR4","TASA4":"TASA4","TASA3":"TASA3","VALE3":"VALE3","VIIA3":"VIIA3","VLID3":"VLID3","VULC3":"VULC3","ONCO3":"ONCO3","VVAR3":"VVAR3","AURA33":"AURA33","BMOB3":"BMOB3","CSMG3":"CSMG3","ELET6":"ELET6","GGBR4":"GGBR4","ITLC34":"ITLC34","PLPL3":"PLPL3","RAPT4":"RAPT4","SLCE3":"SLCE3","TTEN3":"TTEN3","CERT":"CERT3","FEVR":"FEVR3","FEVR CS":"FEVR3","BKI":"BKI","COP":"COP","CVX":"CVX","HPQ":"HPQ","ORCL":"ORCL","ORCL CS":"ORCL","NVIDIA":"NVDA","VALE":"VALE","VALE CS":"VALE","OURO UBS":"GLD"};
+
+var quotes={},loading=false,view="inv",filt="ALL",mktSt="closed";
+var investors=[],acoes=[];
+(function(){var iS={},aS={};for(var i=0;i<RAW.length;i++){var r=RAW[i];if(!iS[r.inv]){iS[r.inv]=1;investors.push(r.inv);}if(!aS[r.acao]){aS[r.acao]=1;acoes.push(r.acao);}}acoes.sort();})();
+
+function getMktState(){var brt=new Date(Date.now()-3*3600000);var d=brt.getUTCDay(),h=brt.getUTCHours(),m=brt.getUTCMinutes();if(d===0||d===6)return"closed";var t=h*60+m;if(t>=600&&t<660)return"pre";if(t>=660&&t<1075)return"open";return"closed";}
+
+function updateBanner(){mktSt=getMktState();var b=document.getElementById("mktBanner");if(mktSt==="pre"){b.className="mkt pre";b.innerHTML="<span>&#128276;</span><span>Pr&eacute;-abertura &mdash; cotação base</span>";}else if(mktSt==="open"){b.className="mkt open";b.innerHTML="<span>&#128994;</span><span>Preg&atilde;o aberto &mdash; tempo real</span>";}else{b.className="mkt closed";b.innerHTML="<span>&#128308;</span><span>Preg&atilde;o encerrado &mdash; fechamento</span>";}}
+
+function setLog(msg){document.getElementById("logLine").textContent=msg;}
+
+// ─── COTAÇÕES via Netlify Function (server-side, sem CORS) ───────────────────
+function fetchQuotes(){
+  var symMap={};
+  for(var i=0;i<RAW.length;i++){var r=RAW[i];var sym=BMAP[r.acao];if(!sym)continue;if(!symMap[sym])symMap[sym]=[];if(symMap[sym].indexOf(r.acao)===-1)symMap[sym].push(r.acao);}
+  var uniqueSyms=Object.keys(symMap);
+  if(!uniqueSyms.length)return Promise.resolve(false);
+  var chunks=[];
+  for(var j=0;j<uniqueSyms.length;j+=20)chunks.push(uniqueSyms.slice(j,j+20));
+  var fetched={},errors=0;
+
+  function nextChunk(idx){
+    if(idx>=chunks.length){
+      var count=0;
+      Object.keys(symMap).forEach(function(s){if(fetched[s]!=null){symMap[s].forEach(function(tk){quotes[tk]=fetched[s];count++;});}});
+      var total=Object.keys(fetched).length;
+      setLog(count>0?"✅ "+total+" símbolos → "+count+" tickers atualizados":"❌ Nenhuma cotação. Erros: "+errors);
+      return Promise.resolve(count>0);
+    }
+    var batch=chunks[idx];
+    // Chama a Netlify Function — mesmo domínio, sem CORS
+    var url="/.netlify/functions/cotacoes?symbols="+batch.join(",");
+    setLog("🔄 Lote "+(idx+1)+"/"+chunks.length+"...");
+    return fetch(url)
+      .then(function(resp){
+        return resp.text().then(function(body){
+          if(!resp.ok){errors++;setLog("⚠️ HTTP "+resp.status+": "+body.slice(0,100));return nextChunk(idx+1);}
+          var data;
+          try{data=JSON.parse(body);}catch(e){errors++;setLog("⚠️ JSON inválido");return nextChunk(idx+1);}
+          if(data&&data.results){data.results.forEach(function(q){if(q.regularMarketPrice!=null)fetched[q.symbol]=q.regularMarketPrice;});}
+          return nextChunk(idx+1);
+        });
+      })
+      .catch(function(e){errors++;setLog("❌ "+e.message);return nextChunk(idx+1);});
+  }
+  return nextChunk(0);
+}
+
+function doRefresh(){
+  if(loading)return;
+  loading=true;
+  document.getElementById("btnRef").classList.add("busy");
+  document.getElementById("spinIcon").classList.add("go");
+  document.getElementById("sdot").className="dot warn";
+  document.getElementById("stxt").textContent="Atualizando...";
+  setLog("🔄 Buscando cotações...");
+  updateBanner();
+  fetchQuotes().then(function(ok){
+    loading=false;
+    document.getElementById("btnRef").classList.remove("busy");
+    document.getElementById("spinIcon").classList.remove("go");
+    var n=Object.keys(quotes).length;
+    var dot=document.getElementById("sdot"),txt=document.getElementById("stxt");
+    if(ok){dot.className="dot live";txt.textContent=n+" cotações · "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});}
+    else{dot.className="dot err";txt.textContent="Sem cotação RT — usando base";}
+    render();
+  }).catch(function(e){loading=false;document.getElementById("btnRef").classList.remove("busy");document.getElementById("spinIcon").classList.remove("go");document.getElementById("sdot").className="dot err";document.getElementById("stxt").textContent="Erro";setLog("❌ "+e.message);render();});
+}
+
+setInterval(function(){if(getMktState()==="open")doRefresh();},5*60*1000);
+
+function getPrice(r){if(mktSt==="pre")return r.ub;return(quotes[r.acao]!=null)?quotes[r.acao]:r.ub;}
+
+function enrich(r){var u=getPrice(r);var sub=(u>0)?u*r.qtde:0;var res=(sub>0&&r.total>0)?sub-r.total:null;var pct=(res!=null&&r.total>0)?(res/r.total)*100:null;var ordV=(r.ordem>0)?r.ordem:null;var rp=(ordV&&r.total>0)?((ordV*r.qtde/r.total)-1)*100:null;var isRT=(quotes[r.acao]!=null&&mktSt!=="pre");return{inv:r.inv,acao:r.acao,qtde:r.qtde,compra:r.compra,total:r.total,bal:r.bal,ordV:ordV,u:u,sub:sub,res:res,pct:pct,rp:rp,isRT:isRT};}
+
+function setView(v){view=v;filt="ALL";document.getElementById("tabInv").className="tab"+(v==="inv"?" on":"");document.getElementById("tabAc").className="tab"+(v==="acao"?" on":"");buildFilters();render();}
+
+function buildFilters(){var bar=document.getElementById("fbar");var list=(view==="inv")?investors:acoes;bar.innerHTML="";function mkB(l,v){var b=document.createElement("button");b.className="fbtn"+(filt===v?" on":"");b.textContent=l;b.onclick=(function(x){return function(){filt=x;buildFilters();render();};})(v);bar.appendChild(b);}mkB("TODOS","ALL");for(var i=0;i<list.length;i++)mkB(list[i],list[i]);}
+
+function getData(){if(filt==="ALL")return RAW;if(view==="inv")return RAW.filter(function(r){return r.inv===filt;});return RAW.filter(function(r){return r.acao===filt;});}
+
+function fN(n,d){if(d===undefined)d=2;if(n==null||isNaN(n))return"—";return n.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fM(n){if(n==null||isNaN(n))return"—";return(n<0?"-":"")+"R$ "+fN(Math.abs(n),2);}
+function fP(n){if(n==null||isNaN(n))return"—";return(n>=0?"+":"")+fN(n,2)+"%";}
+function cc(n){if(!n||isNaN(n)||n===0)return"neu";return n>0?"pos":"neg";}
+
+function renderCards(rows){var er=rows.map(enrich);var ti=0,ts=0,tr=0,nOrd=0;for(var i=0;i<rows.length;i++){ti+=rows[i].total;if(rows[i].ordem>0)nOrd++;}for(var j=0;j<er.length;j++){if(er[j].sub>0)ts+=er[j].sub;if(er[j].res!=null)tr+=er[j].res;}var hq=er.some(function(r){return r.isRT;});var pg=(ti>0)?(tr/ti)*100:null;document.getElementById("cards").innerHTML='<div class="card"><div class="card-lbl">Total Investido</div><div class="card-val">R$&nbsp;'+fN(ti,0)+'</div><div class="card-sub">'+rows.length+' posições</div></div><div class="card"><div class="card-lbl">Carteira Atual</div><div class="card-val">R$&nbsp;'+fN(ts,0)+'</div><div class="card-sub">'+(hq?"cotação RT":"base planilha")+'</div></div><div class="card"><div class="card-lbl">Resultado</div><div class="card-val '+cc(tr)+'">'+(tr>=0?"+":"")+fM(tr)+'</div><div class="card-sub">'+(pg!=null?fP(pg)+" sobre custo":"")+'</div></div><div class="card"><div class="card-lbl">Ordens Ativas</div><div class="card-val y">'+nOrd+'</div><div class="card-sub">posições com alvo</div></div>';}
+
+function mkRow(lbl,r){var st=r.isRT?'<span class="rt">RT</span>':'<span class="base">&#8857;</span>';var uH=(r.u>0)?fN(r.u)+st:"—";var sH=(r.sub>0)?fN(r.sub,0):"—";var rH=(r.res!=null)?'<span class="'+cc(r.res)+'">'+(r.res>=0?"+":"")+fN(r.res,0)+"</span>":"—";var pH=(r.pct!=null)?'<span class="'+cc(r.pct)+'">'+fP(r.pct)+"</span>":"—";var oH=r.ordV?'<span class="ord-badge">'+fN(r.ordV)+"</span>":'<span class="nao">N&atilde;o h&aacute;</span>';var rpH=r.ordV?(r.rp!=null?'<span class="'+cc(r.rp)+'">'+fP(r.rp)+"</span>":"—"):'<span class="neu">—</span>';var bH=r.bal?'<span class="bal">'+r.bal+"</span>":'<span class="neu">—</span>';var qd=(r.qtde%1===0)?0:2;return"<tr><td>"+lbl+"</td><td>"+fN(r.qtde,qd)+"</td><td>"+fN(r.compra)+"</td><td>"+fN(r.total,0)+"</td><td>"+uH+"</td><td>"+sH+"</td><td>"+rH+"</td><td>"+pH+"</td><td>"+oH+"</td><td>"+rpH+"</td><td>"+bH+"</td></tr>";}
+
+function mkTot(ti,ts,tr2){var pg=(ti>0)?(tr2/ti)*100:null;return'<tr class="tot"><td>TOTAL</td><td colspan="2"></td><td>'+fN(ti,0)+'</td><td></td><td>'+(ts>0?fN(ts,0):"—")+'</td><td class="'+cc(tr2)+'">'+(ts>0?(tr2>=0?"+":"")+fN(tr2,0):"—")+'</td><td class="'+(pg!=null?cc(pg):"neu")+'">'+(pg!=null?fP(pg):"—")+'</td><td colspan="3"></td></tr><tr class="gap"><td colspan="11"></td></tr>';}
+
+function mkThead(c){return"<table><thead><tr><th style='text-align:left'>"+c+"</th><th>Qtde</th><th>Compra</th><th>Total</th><th>&Uacute;ltimo</th><th>Subtotal</th><th>Resultado</th><th>%</th><th>Ordem</th><th>Res.Prev.</th><th>Balan&ccedil;o</th></tr></thead><tbody>";}
+
+function renderInv(rows){var grp={};for(var i=0;i<rows.length;i++){var r=rows[i];if(!grp[r.inv])grp[r.inv]=[];grp[r.inv].push(enrich(r));}var h=mkThead("A&ccedil;&atilde;o");var invs=Object.keys(grp);for(var g=0;g<invs.length;g++){var inv=invs[g],items=grp[inv];var ti=0,ts=0,tr2=0;for(var k=0;k<items.length;k++){ti+=items[k].total;if(items[k].sub>0)ts+=items[k].sub;if(items[k].res!=null)tr2+=items[k].res;}h+="<tr><td colspan='11' style='padding:4px 0 2px'><div class='gh inv'><span>"+inv+"</span><span class='gh-sub'>"+items.length+" ativo"+(items.length>1?"s":"")+" &bull; R$&nbsp;"+fN(ti,0)+(ts>0?" &bull; Atual: R$&nbsp;"+fN(ts,0):"")+"</span></div></td></tr>";for(var m=0;m<items.length;m++)h+=mkRow("<span class='tk'>"+items[m].acao+"</span>",items[m]);h+=mkTot(ti,ts,tr2);}document.getElementById("tbl").innerHTML=h+"</tbody></table>";}
+
+function renderAcao(rows){var grp={};for(var i=0;i<rows.length;i++){var r=rows[i];if(!grp[r.acao])grp[r.acao]=[];grp[r.acao].push(enrich(r));}var h=mkThead("Investidor");var acs=Object.keys(grp);for(var g=0;g<acs.length;g++){var ac=acs[g],items=grp[ac];var ti=0,ts=0,tr2=0;for(var k=0;k<items.length;k++){ti+=items[k].total;if(items[k].sub>0)ts+=items[k].sub;if(items[k].res!=null)tr2+=items[k].res;}var uD=(quotes[ac]&&mktSt!=="pre")?" &mdash; R$&nbsp;"+fN(quotes[ac]):"";h+="<tr><td colspan='11' style='padding:4px 0 2px'><div class='gh ac'><span><span class='tk' style='margin-right:6px'>"+ac+"</span>"+uD+"</span><span class='gh-sub'>"+items.length+" investidor"+(items.length>1?"es":"")+" &bull; R$&nbsp;"+fN(ti,0)+"</span></div></td></tr>";for(var m=0;m<items.length;m++)h+=mkRow(items[m].inv,items[m]);h+=mkTot(ti,ts,tr2);}document.getElementById("tbl").innerHTML=h+"</tbody></table>";}
+
+function render(){var rows=getData();renderCards(rows);if(view==="inv")renderInv(rows);else renderAcao(rows);}
+
+updateBanner();buildFilters();render();
+setTimeout(function(){doRefresh();},800);
+</script>
+</body>
+</html>
